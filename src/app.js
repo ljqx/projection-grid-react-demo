@@ -1,10 +1,10 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import _ from 'lodash';
 import React, { Component } from 'react';
-import Octicon from 'react-octicon';
 
 import ProjectionGridReact from 'projection-grid-react';
 import Form from './Form';
-import IconedCell from './iconed-cell';
+import IconedCell from './IconedCell';
 import data from './data.json';
 
 export default class App extends Component {
@@ -23,7 +23,6 @@ export default class App extends Component {
   }
 
   changeClasses(classes) {
-    console.log(classes)
     this.setState({
       classes,
     });
@@ -43,8 +42,8 @@ export default class App extends Component {
             <h3>Projection Grid for ReactJs</h3>
           </div>
           <div className="panel-body">
-            <Form 
-              classes={this.state.classes} 
+            <Form
+              classes={this.state.classes}
               icon={this.state.icon}
               onClassesChange={this.changeClasses}
               onIconChange={this.changeIcon}
@@ -57,19 +56,17 @@ export default class App extends Component {
               {
                 key: 'UserName',
                 $td: this.state.icon ? {
-                  content: (td, content) => (
+                  content: ({ isHeader }, content) => isHeader ? 'User Name' : (
                     <IconedCell content={content} icon={this.state.icon} />
                   ),
                 } : {},
-                sorting: this.sortBy === 'UserName',
               },
               { key: 'FirstName' },
               { key: 'LastName' },
-              { 
+              {
                 key: 'Emails',
                 $td: {
-                  // differentiate header & content?
-                  content: (td, content) => typeof content === 'string' ? content : content.join(' & ')
+                  content: ({ isHeader }, content) => isHeader ? content : content.join(' & ')
                 }
               }
             ]}
@@ -79,8 +76,35 @@ export default class App extends Component {
             classes={this.state.classes}
             tfoot={{
               trs: [{
-                content: 'foot placeholder',
+                content: 'fooooooooooooooooooot placeholder',
               }],
+            }}
+            sorting={{
+              cols: ['UserName', 'FirstName', 'LastName'],
+              $default: {
+                classes: ['sortable-header'],
+              },
+              $asc: {
+                classes: ['sortable-header'],
+                content: (td, content) => {
+                  return <IconedCell content={content} icon="arrow-up" />
+                }
+              },
+              $desc: {
+                classes: ['sortable-header'],
+                content: (td, content) => {
+                  return <IconedCell content={content} icon="arrow-down" />
+                }
+              },
+              onSort: ({ sortBy, direction }) => {
+                const dataAsc = _.sortBy(this.state.data, sortBy);
+
+                this.setState({
+                  sortBy,
+                  direction,
+                  data: direction === 'asc' ? dataAsc : _.reverse(dataAsc),
+                });
+              }
             }}
           />
         </div>
